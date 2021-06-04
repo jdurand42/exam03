@@ -18,7 +18,6 @@ int ft_error(char *s, FILE *file)
 	if (file)
 		fclose(file);
 	write(1, s, ft_strlen(s));
-	while (1);
 	return (1);
 }
 
@@ -52,29 +51,26 @@ void ft_free(char **tab, float w, float h)
 	free(tab);
 }
 
-void algo(char **tab, float w, float h, float xc, float yc, float lx, float hy, char type, char c)
+void algo(char **tab, float w, float h, float xc, float yc, float r, char type, char c)
 {
-	float x = 0;
-	float y = 0;
+	float i = 0;
+	float j = 0;
+	float d;
 
-	while (y < h)
+	while (i < h)
 	{
-		x = 0;
-		while (x < w)
+		j = 0;
+		while (j < w)
 		{
-			if (x < xc || y < yc || x > xc + lx || y > yc + hy)
-			{
-			;
-			}
-			else if (type == 'R')
-				tab[(int)y][(int)x] = c;
-			else if (type == 'r' && (x - xc < 1 || y - yc < 1 ||
-			xc + lx - x < 1 || yc + hy - y < 1)
-)
-				tab[(int)y][(int)x] = c;
-			x++;
+			d = sqrtf((xc - j) * (xc - j) + (yc - i) * (yc - i));
+		 	if (type == 'C' && d <= r)
+				tab[(int)i][(int)j] = c;
+			else if (type == 'c' && d <= r && r - d < 1)
+				tab[(int)i][(int)j] = c; 
+			j++;
+				
 		}
-		y++;
+		i++;
 	}
 }
 
@@ -86,13 +82,12 @@ int main(int ac, char **av)
 	char **tab;
 	float w;
 	float h;
+	float r;
 	char type;
 	char c;
 	char empty;
 	float xc;
 	float yc;
-	float lx;
-	float hy;
 	
 	if (ac != 2)
 		return(ft_error("Error: argument\n", NULL));
@@ -116,18 +111,22 @@ int main(int ac, char **av)
 	}
 	//print_tab(tab, w, h);
 	i = 0;
-	while  ((ret = fscanf(file, "%c %f %f %f %f %c\n", &type, &xc, &yc, &lx, &hy, &c)) != EOF)
+	while  ((ret = fscanf(file, "%c %f %f %f %c\n", &type, &xc, &yc, &r, &c)) == 5)
 	{
-		if (ret != 6 || (type != 'R' && type != 'r') || lx <= 0 || hy <= 0)
+		if ((type != 'C' && type != 'c') || r <= 0)
 		{
 			ft_free(tab, w, h);
 			return (ft_error("Error: Operation file corrupted\n", file));
 		}
-		algo(tab, w, h, xc, yc, lx, hy, type, c);
+		algo(tab, w, h, xc, yc, r, type, c);
 	}
+	if (ret != -1)
+	{
+		ft_free(tab, w, h);
+		return (ft_error("Error: Operation file corrupted\n", file));
+	}	
 	print_tab(tab, w, h);
-	fclose(file);
+	fclose(file); 
 	ft_free(tab, w, h);
-	while (1);
 	return (0);
 }

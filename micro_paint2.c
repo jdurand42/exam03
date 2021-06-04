@@ -18,7 +18,6 @@ int ft_error(char *s, FILE *file)
 	if (file)
 		fclose(file);
 	write(1, s, ft_strlen(s));
-	while (1);
 	return (1);
 }
 
@@ -56,22 +55,24 @@ void algo(char **tab, float w, float h, float xc, float yc, float lx, float hy, 
 {
 	float x = 0;
 	float y = 0;
+	printf("type: %c\n", type);
 
 	while (y < h)
 	{
 		x = 0;
 		while (x < w)
 		{
-			if (x < xc || y < yc || x > xc + lx || y > yc + hy)
+			if (x >= xc && x <= xc + lx && y >= yc && y <= yc + hy)
 			{
-			;
-			}
-			else if (type == 'R')
-				tab[(int)y][(int)x] = c;
-			else if (type == 'r' && (x - xc < 1 || y - yc < 1 ||
-			xc + lx - x < 1 || yc + hy - y < 1)
-)
-				tab[(int)y][(int)x] = c;
+				if (type == 'R')
+					tab[(int)y][(int)x] = c;
+				else if (type == 'r')
+				{
+					if (x - xc < 1 || y - yc < 1 ||
+					(xc + lx) - x < 1 || (yc + hy) - y < 1)
+						tab[(int)y][(int)x] = c;
+				}
+			}	
 			x++;
 		}
 		y++;
@@ -102,7 +103,7 @@ int main(int ac, char **av)
 	// Reading start
 
 	ret = fscanf(file, "%f %f %c\n", &w, &h, &empty);
-	if (ret != 3 || w < 0 || w >= 300 || h < 0 || h >= 300)
+	if (ret != 3 || w <= 0 || w >= 300 || h <= 0 || h >= 300)
 		return (ft_error("Error: Operation file corrupted\n", file));
 	if (!(tab = (char**)malloc(h * sizeof(char*))))
 		return (1);
@@ -116,18 +117,23 @@ int main(int ac, char **av)
 	}
 	//print_tab(tab, w, h);
 	i = 0;
-	while  ((ret = fscanf(file, "%c %f %f %f %f %c\n", &type, &xc, &yc, &lx, &hy, &c)) != EOF)
+	while  ((ret = fscanf(file, "%c %f %f %f %f %c\n", &type, &xc, &yc, &lx, &hy, &c)) == 6)
 	{
-		if (ret != 6 || (type != 'R' && type != 'r') || lx <= 0 || hy <= 0)
+		if ((type != 'R' && type != 'r') || lx <= 0 || hy <= 0)
 		{
 			ft_free(tab, w, h);
 			return (ft_error("Error: Operation file corrupted\n", file));
 		}
 		algo(tab, w, h, xc, yc, lx, hy, type, c);
 	}
+	printf("ret: %d\n", ret);
+	if (ret != -1)
+	{
+		ft_free(tab, w, h);
+		return (ft_error("Error: Operation file corrupted\n", file));
+	}
 	print_tab(tab, w, h);
 	fclose(file);
 	ft_free(tab, w, h);
-	while (1);
 	return (0);
 }
